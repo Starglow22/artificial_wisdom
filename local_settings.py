@@ -17,10 +17,10 @@ TWITTER_SOURCE_ACCOUNTS = [""]  # A list of comma-separated, quote-enclosed Twit
 MASTODON_SOURCE_ACCOUNTS = [""] # A list, e.g. ["@user@instance.tld"]
 SOURCE_EXCLUDE = r'^$'  # Source tweets that match this regexp will not be added to the Markov chain. You might want to filter out inappropriate words for example.
 STATIC_TEST = True  # Set this to True if you want to test Markov generation from a static file instead of the API.
-TEST_SOURCE = ".txt"  # The name of a text file of a string-ified list for testing. To avoid unnecessarily hitting Twitter API. You can use the included testcorpus.txt, if needed.
+TEST_SOURCE = "alan_watts.json"  # The name of a json file of an array of string data
 
 ODDS = 8  # How often do you want this to run? 1/8 times?
-ORDER = 2  # How closely do you want this to hew to sensical? 2 is low and 4 is high.
+ORDER = 2  # How many words is a state? How closely do you want this to be to sensical? 2 is low and 4 is high.
 
 DEBUG = True  # Set this to False to start Tweeting live
 TWEET_ACCOUNT = ""  # The name of the account you're tweeting to.
