@@ -2,7 +2,6 @@ import random
 import re
 import sys
 import twitter
-from mastodon import Mastodon
 import markov
 from bs4 import BeautifulSoup
 try:
@@ -24,8 +23,6 @@ def connect(type='twitter'):
                        access_token_key=MY_ACCESS_TOKEN_KEY,
                        access_token_secret=MY_ACCESS_TOKEN_SECRET,
                        tweet_mode='extended')
-    elif type == 'mastodon':
-        return Mastodon(client_id=CLIENT_CRED_FILENAME, api_base_url=MASTODON_API_BASE_URL, access_token=USER_ACCESS_FILENAME)
     return None
 
 
@@ -64,39 +61,6 @@ def filter_status(text):
     return text
 
 
-def scrape_page(src_url, web_context, web_attributes):
-    tweets = []
-    last_url = ""
-    for i in range(len(src_url)):
-        if src_url[i] != last_url:
-            last_url = src_url[i]
-            print(">>> Scraping {0}".format(src_url[i]))
-            try:
-                page = urlopen(src_url[i])
-            except Exception:
-                last_url = "ERROR"
-                import traceback
-                print(">>> Error scraping {0}:".format(src_url[i]))
-                print(traceback.format_exc())
-                continue
-            soup = BeautifulSoup(page, 'html.parser')
-        hits = soup.find_all(web_context[i], attrs=web_attributes[i])
-        if not hits:
-            print(">>> No results found!")
-            continue
-        else:
-            errors = 0
-            for hit in hits:
-                try:
-                    tweet = str(hit.text).strip()
-                except (UnicodeEncodeError, UnicodeDecodeError):
-                    errors += 1
-                    continue
-                if tweet:
-                    tweets.append(tweet)
-            if errors > 0:
-                print(">>> We had trouble reading {} result{}.".format(errors, "s" if errors > 1 else ""))
-    return(tweets)
 
 
 def grab_tweets(api, max_id=None):
@@ -149,8 +113,6 @@ if __name__ == "__main__":
             string_list = open(file).readlines()
             for item in string_list:
                 source_statuses += item.split(",")
-        if SCRAPE_URL:
-            source_statuses += scrape_page(SRC_URL, WEB_CONTEXT, WEB_ATTRIBUTES)
         if ENABLE_TWITTER_SOURCES and TWITTER_SOURCE_ACCOUNTS and len(TWITTER_SOURCE_ACCOUNTS[0]) > 0:
             twitter_tweets = []
             for handle in TWITTER_SOURCE_ACCOUNTS:
@@ -168,29 +130,6 @@ if __name__ == "__main__":
                     sys.exit()
                 else:
                     source_statuses += twitter_tweets
-        if ENABLE_MASTODON_SOURCES and len(MASTODON_SOURCE_ACCOUNTS) > 0:
-            source_toots = []
-            mastoapi = connect(type='mastodon')
-            max_id=None
-            for handle in MASTODON_SOURCE_ACCOUNTS:
-                accounts = mastoapi.account_search(handle)
-                if len(accounts) != 1:
-                    pass # Ambiguous search
-                else:
-                    account_id = accounts[0]['id']
-                    num_toots = accounts[0]['statuses_count']
-                    if num_toots < 3200:
-                        my_range = int((num_toots/200)+1)
-                    else:
-                        my_range = 17
-                    for x in range(my_range)[1:]:
-                        source_toots_iter, max_id = grab_toots(mastoapi,account_id, max_id=max_id)
-                        source_toots += source_toots_iter
-                    print("{0} toots found from {1}".format(len(source_toots), handle))
-                    if len(source_toots) == 0:
-                        print("Error fetching toots for %s. Aborting." % handle)
-                        sys.exit()
-            source_statuses += source_toots
         if len(source_statuses) == 0:
             print("No statuses found!")
             sys.exit()
@@ -235,8 +174,6 @@ if __name__ == "__main__":
             if not DEBUG:
                 if ENABLE_TWITTER_POSTING:
                     status = api.PostUpdate(ebook_status)
-                if ENABLE_MASTODON_POSTING:
-                    status = mastoapi.toot(ebook_status)
             print(ebook_status)
 
         elif not ebook_status:
