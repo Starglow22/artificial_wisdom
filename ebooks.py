@@ -139,14 +139,8 @@ if __name__ == "__main__":
         mine = markov.MarkovChainer(ORDER)
         for status in source_statuses:
             mine.add_sentence(status)
-        for x in range(0, 10):
-            generated_sentence = mine.generate_sentence()
 
-        # randomly drop the last word, as Horse_ebooks appears to do.
-        # if random.randint(0, 4) == 0 and re.search(r'(in|to|from|for|with|by|our|of|your|around|under|beyond)\s\w+$', ebook_status) is not None:
-        #     print("Losing last word randomly")
-        #     ebook_status = re.sub(r'\s\w+.$', '', ebook_status)
-        #     print(ebook_status)
+        generated_sentence = mine.generate_sentence()
 
         # if a tweet is very short, this will randomly add a second sentence to it.
         if generated_sentence is not None and len(generated_sentence) < 40:
@@ -158,10 +152,6 @@ if __name__ == "__main__":
                     generated_sentence += " " + mine.generate_sentence()
                 else:
                     generated_sentence = generated_sentence
-            # elif rando == 1:
-            #     # say something crazy/prophetic in all caps
-            #     print("ALL THE THINGS")
-            #     generated_sentence = generated_sentence.upper()
 
         # throw out tweets that match anything from the source account.
         if generated_sentence is not None and len(generated_sentence) < 210:

@@ -70,7 +70,18 @@ class MarkovChainer(object):
         dtkn = tb.TreebankWordDetokenizer()
         result = dtkn.detokenize(tokens)
         # Cosmetic punctuation spacing fixed
-        result = result.replace(" ’ ", "’").replace("“ ", "“").replace(" ”", "”")
+        result = result.replace(" ’ ", "’").replace('“ ', '“').replace(' ”', '”')
+
+        def find_all(ch, s):
+            return [i for i, ltr in enumerate(s) if ltr == ch]
+
+        # Chain rarely closes brackets
+        if '“' in result and '”' not in result:
+            start_index = result.find('”')
+            valid_insert_pos = list(filter(lambda i: i > start_index, find_all(' ', result)))
+            selected_pos = random.choice(valid_insert_pos)
+            result = result[:selected_pos] + '”' + result[selected_pos:]
+
         return result
 
     def gen(self):
