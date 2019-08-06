@@ -1,6 +1,5 @@
 import random
-import re
-import operator
+import nltk.tokenize.treebank as tb
 
 """
 Modified based on Markovify github project to include frequencies.
@@ -21,8 +20,8 @@ class MarkovChainer(object):
 
     # pass a string with a terminator to the function to add it to the markov lists.
     def add_sentence(self, string):
-        # data = "".join(string)
-        words = re.findall(r"[.,!?;]|\w+'?\w*", string.strip()) + [END]
+        tkn = tb.TreebankWordTokenizer()
+        words = tkn.tokenize(string.strip()) + [END]
 
         buf = []
         if len(words) >= self.state_size:
@@ -39,8 +38,11 @@ class MarkovChainer(object):
                 next_word = buf[-1]
                 if state in self.model and next_word in self.model[state]:
                     self.model[state][next_word] += 1
+                elif state in self.model:
+                    self.model[state][next_word] = 1
                 else:
                     self.model[state] = {next_word: 1}
+
                 buf.pop(0)
             else:
                 continue
@@ -65,11 +67,10 @@ class MarkovChainer(object):
         starting with a naive BEGIN state, or the provided `init_state` (as a tuple).
         """
         tokens = self.gen()
-        result = ""
-        for word in tokens:
-            if not re.match(r"[.,!?;:]", word) and word != tokens[0]:
-                result += " "
-            result += word
+        dtkn = tb.TreebankWordDetokenizer()
+        result = dtkn.detokenize(tokens)
+        # Cosmetic punctuation spacing fixed
+        result = result.replace(" ’ ", "’").replace("“ ", "“").replace(" ”", "”")
         return result
 
     def gen(self):
@@ -123,6 +124,8 @@ class MarkovChainer(object):
         """
         Given a state, choose the next item at random.
         """
+
+        # TODO: smooth weights - log? Switch to a single word state for more possibilities?
         choices, weights = zip(*self.model[state].items())
         selection = random.choices(choices, weights=weights)
         return selection[0]
