@@ -86,9 +86,7 @@ class MarkovChainer(object):
 
     def gen(self):
         """
-        Starting either with a naive BEGIN state, or the provided `init_state`
-        (as a tuple), return a generator that will yield successive items
-        until the chain reaches the END state.
+        Generate until the chain reaches the END state.
         """
 
         choices, weights = zip(*self.beginnings.items())
