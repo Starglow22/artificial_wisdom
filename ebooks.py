@@ -114,24 +114,6 @@ if __name__ == "__main__":
             with open(file, 'r') as f:
                 source_statuses = json.load(f)
 
-        if ENABLE_TWITTER_SOURCES and TWITTER_SOURCE_ACCOUNTS and len(TWITTER_SOURCE_ACCOUNTS[0]) > 0:
-            twitter_tweets = []
-            for handle in TWITTER_SOURCE_ACCOUNTS:
-                user = handle
-                handle_stats = api.GetUser(screen_name=user)
-                status_count = handle_stats.statuses_count
-                max_id = None
-                my_range = min(17, int((status_count/200) + 1))
-                for x in range(1, my_range):
-                    twitter_tweets_iter, max_id = grab_tweets(api, max_id)
-                    twitter_tweets += twitter_tweets_iter
-                print("{0} tweets found in {1}".format(len(twitter_tweets), handle))
-                if not twitter_tweets:
-                    print("Error fetching tweets from Twitter. Aborting.")
-                    sys.exit()
-                else:
-                    source_statuses += twitter_tweets
-
         if len(source_statuses) == 0:
             print("No statuses found!")
             sys.exit()
