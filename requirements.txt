@@ -1,3 +1,5 @@
 requests
 python-twitter
 beautifulsoup4
+nltk
+
